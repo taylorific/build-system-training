@@ -58,17 +58,13 @@ routeAlias: toc
 <Toc columns="2"/>
 
 ---
-layout: section
+src: ./nix/slides.md
 ---
 
-# Nix
-
-<br>
-<br>
-<Link to="toc" title="Table of Contents"/>
-
 ---
-hideInToc: true
+src: ./buck2/slides.md
 ---
 
-# blas
+---
+src: ./bazel/slides.md
+---
