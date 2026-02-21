@@ -146,3 +146,89 @@ buildifier --mode=fix --lint=off -v -r .
 buildifier --mode=fix --lint=warn -v -r .
 
 buildifier --mode=fix --lint=fix -v -r .
+```
+
+---
+hideInToc: true
+---
+
+```bash
+mkdir -p /workspace
+cd /workspace
+touch WORKSPACE
+
+cat >MODULE.bazel <<'EOF'
+module(name = "hello", version = "0.1.0")
+bazel_dep(name = "rules_cc", version = "0.2.14")
+EOF
+
+cat >BUILD <<'EOF'
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "my_lib",
+    srcs = ["my_lib.cpp"],
+    hdrs = ["my_lib.h"],
+    visibility = ["//visibility:public"],
+)
+EOF
+
+cat >hello_world.cpp <<'EOF'
+#include "my_lib.h"
+#include <iostream>
+
+int main() {
+  std::cout << "Hello world " << my_lib::sum(40, 2) << std::endl;
+  return 0;
+}
+EOF
+
+cat >my_lib.h <<'EOF'
+namespace my_lib {
+    int sum( int a, int b );
+}
+EOF
+
+cat >my_lib.cpp <<'EOF'
+#include "my_lib.h"
+
+namespace my_lib {
+    int sum( int a, int b )
+    {
+        return a + b;
+    }
+}
+EOF
+```
+
+```bash
+bazel build //:my_lib
+```
+
+---
+hideInToc: true
+---
+
+```bash
+cat >BUILD <<'EOF'
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "my_lib",
+    srcs = ["my_lib.cpp"],
+    hdrs = ["my_lib.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+   name = "hello_world",
+   srcs = ["hello_world.cpp"],
+   deps = [":my_lib"],
+)
+EOF
+```
+
+```bash
+bazel build //:hello_world
+```
