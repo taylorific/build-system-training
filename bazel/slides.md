@@ -88,3 +88,61 @@ $ buildifier --version
 buildifier version: 8.5.1-3-g0951e28
 buildifier scm revision: 0951e28ad5a191e4d421d3899f3259e3e0f1aa54
 ```
+
+---
+hideInToc: true
+---
+
+```bash
+mkdir -p /workspace
+cd /workspace
+touch WORKSPACE
+
+cat >MODULE.bazel <<'EOF'
+module(
+    name = "hello",
+    version = "0.1.0",
+)
+
+bazel_dep(name = "rules_cc", version = "0.0.10")
+EOF
+
+cat >BUILD <<'EOF'
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+cc_binary(
+    name = "hello_world",
+    srcs = ["main.cpp"],
+)
+EOF
+
+cat >main.cpp <<'EOF'
+#include <iostream>
+
+int main() {
+  std::cout << "Hello, this is my first Bazel target\n";
+  return 0;
+}
+EOF
+```
+
+```bash
+bazel build //:hello_world
+bazel run //:hello_world
+bazel cquery --output=files //:hello_world
+```
+
+---
+hideInToc: true
+---
+
+```bash
+buildifier --mode=check --lint=off -v -r .
+
+buildifier --mode=fix --lint=off -v -r .
+```
+
+```bash
+buildifier --mode=fix --lint=warn -v -r .
+
+buildifier --mode=fix --lint=fix -v -r .
