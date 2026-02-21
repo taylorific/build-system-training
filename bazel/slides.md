@@ -70,6 +70,7 @@ hideInToc: true
 ---
 
 ```bash
+# Intel
 sudo curl -L -o /usr/local/bin/buildifier \
   https://github.com/bazelbuild/buildtools/releases/latest/download/buildifier-linux-amd64
 
@@ -77,6 +78,7 @@ sudo chmod +x /usr/local/bin/buildifier
 ```
 
 ```bash
+# ARM64
 sudo curl -L -o /usr/local/bin/buildifier \
   https://github.com/bazelbuild/buildtools/releases/latest/download/buildifier-linux-arm64
 
@@ -96,40 +98,34 @@ hideInToc: true
 ```bash
 mkdir -p /workspace
 cd /workspace
-touch WORKSPACE
 
 cat >MODULE.bazel <<'EOF'
-module(
-    name = "hello",
-    version = "0.1.0",
-)
-
-bazel_dep(name = "rules_cc", version = "0.0.10")
+bazel_dep(name = "rules_cc", version = "0.2.14")
 EOF
 
 cat >BUILD <<'EOF'
-load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 
 cc_binary(
-    name = "hello_world",
-    srcs = ["main.cpp"],
+    name = "hello-world",
+    srcs = ["hello-world.cpp"],
 )
 EOF
 
-cat >main.cpp <<'EOF'
+cat >hello-world.cpp <<'EOF'
 #include <iostream>
 
 int main() {
-  std::cout << "Hello, this is my first Bazel target\n";
+  std::cout << "Hello, this is my first Bazel target" << std::endl;;
   return 0;
 }
 EOF
 ```
 
 ```bash
-bazel build //:hello_world
-bazel run //:hello_world
-bazel cquery --output=files //:hello_world
+bazel build //:hello-world
+bazel run //:hello-world
+bazel cquery --output=files //:hello-world
 ```
 
 ---
