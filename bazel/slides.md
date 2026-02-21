@@ -292,3 +292,22 @@ EOF
 bazel build //:hello_test
 bazel test //:hello_test
 ```
+
+---
+hideInToc: true
+---
+
+```bash
+bazel cquery "deps(//:hello_world)"
+
+bazel cquery \
+  'filter("^//", deps(//:hello_world))' \
+  --output=label
+
+bazel cquery "allpaths(//:hello_world,//:hello_library.h)"
+
+bazel cquery "somepath(//:hello_world,//:hello_library.h)"
+
+bazel cquery "rdeps(...,//:hello_library.h)"
+
+```
