@@ -231,3 +231,62 @@ EOF
 bazel build //:hello_world
 bazel run //:hello_world
 ```
+
+---
+hideInToc: true
+---
+
+```bash
+cat >MODULE.bazel <<'EOF'
+bazel_dep(name = "rules_cc", version = "0.2.14")
+bazel_dep(name = "googletest", version = "1.17.0.bcr.2")
+EOF
+```
+
+```bash
+cat >BUILD <<'EOF'
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "hello_library",
+    srcs = ["hello_library.cpp"],
+    hdrs = ["hello_library.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "hello_world",
+    srcs = ["hello_world.cpp"],
+    deps = [":hello_library"],
+)
+
+cc_test(
+    name = "hello_test",
+    srcs = ["hello_test.cpp"],
+    deps = [":hello_library", "@googletest//:gtest_main"]
+)
+EOF
+```
+
+```bash
+cat >hello_test.cpp <<'EOF'
+#include "hello_library.h"
+#include <gtest/gtest.h>
+
+TEST(Sum, SumbNegativeValues) {
+    EXPECT_EQ( -11, hello_library::sum(-8, -3) );
+}
+
+TEST(Sum, SumPositiveValues) {
+    EXPECT_EQ( 4, hello_library::sum(2, 2) );
+}
+EOF
+```
+
+```bash
+bazel build //:hello_test
+bazel run //:hello_test
+```
