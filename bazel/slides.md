@@ -246,7 +246,6 @@ EOF
 ```bash
 cat >BUILD <<'EOF'
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
-load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
@@ -266,7 +265,10 @@ cc_binary(
 cc_test(
     name = "hello_test",
     srcs = ["hello_test.cpp"],
-    deps = [":hello_library", "@googletest//:gtest_main"]
+    deps = [
+        ":hello_library",
+        "@googletest//:gtest_main",
+    ],
 )
 EOF
 ```
@@ -288,5 +290,5 @@ EOF
 
 ```bash
 bazel build //:hello_test
-bazel run //:hello_test
+bazel test //:hello_test
 ```
