@@ -107,12 +107,12 @@ cat >BUILD <<'EOF'
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 
 cc_binary(
-    name = "hello-world",
-    srcs = ["hello-world.cpp"],
+    name = "hello_world",
+    srcs = ["hello_world.cpp"],
 )
 EOF
 
-cat >hello-world.cpp <<'EOF'
+cat >hello_world.cpp <<'EOF'
 #include <iostream>
 
 int main() {
@@ -123,9 +123,9 @@ EOF
 ```
 
 ```bash
-bazel build //:hello-world
-bazel run //:hello-world
-bazel cquery --output=files //:hello-world
+bazel build //:hello_world
+bazel run //:hello_world
+bazel cquery --output=files //:hello_world
 ```
 
 ---
@@ -151,10 +151,8 @@ hideInToc: true
 ```bash
 mkdir -p /workspace
 cd /workspace
-touch WORKSPACE
 
 cat >MODULE.bazel <<'EOF'
-module(name = "hello", version = "0.1.0")
 bazel_dep(name = "rules_cc", version = "0.2.14")
 EOF
 
@@ -162,24 +160,14 @@ cat >BUILD <<'EOF'
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
 cc_library(
-    name = "my_lib",
-    srcs = ["my_lib.cpp"],
-    hdrs = ["my_lib.h"],
+    name = "hello-library",
+    srcs = ["hello-library.cpp"],
+    hdrs = ["hello-library.h"],
     visibility = ["//visibility:public"],
 )
 EOF
 
-cat >hello_world.cpp <<'EOF'
-#include "my_lib.h"
-#include <iostream>
-
-int main() {
-  std::cout << "Hello world " << my_lib::sum(40, 2) << std::endl;
-  return 0;
-}
-EOF
-
-cat >my_lib.h <<'EOF'
+cat >hello-library.h <<'EOF'
 namespace my_lib {
     int sum( int a, int b );
 }
@@ -224,7 +212,15 @@ cc_binary(
 )
 EOF
 ```
+cat >hello_world.cpp <<'EOF'
+#include "my_lib.h"
+#include <iostream>
 
+int main() {
+  std::cout << "Hello world " << my_lib::sum(40, 2) << std::endl;
+  return 0;
+}
+EOF
 ```bash
 bazel build //:hello_world
 ```
