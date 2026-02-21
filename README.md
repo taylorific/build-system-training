@@ -1,4 +1,4 @@
-# KVM Training
+# Build System Training
 
 To start the slide show:
 
