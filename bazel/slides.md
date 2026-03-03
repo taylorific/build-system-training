@@ -96,31 +96,94 @@ hideInToc: true
 ---
 
 ```bash
+apt-get update
+apt-get install build-essential
+DEBIAN_FRONTEND=noninteractive apt-get install vim
+```
+
+---
+hideInToc: true
+---
+
+```bash
 mkdir -p /workspace
 cd /workspace
 
-cat >MODULE.bazel <<'EOF'
-bazel_dep(name = "rules_cc", version = "0.2.14")
+cat >hello_world.cpp <<'EOF'
+#include <iostream>
+
+int main() {
+  std::cout << "Hello, this is my first Bazel target" << std::endl;
+  return 0;
+}
 EOF
+```
+
+---
+hideInToc: true
+---
+
+```bash
+touch MODULE.bazel
 
 cat >BUILD <<'EOF'
+cc_binary(
+    name = "hello_world",
+    srcs = ["hello_world.cpp"],
+)
+EOF
+```
+
+---
+hideInToc: true
+---
+
+```bash
+$ bazel build //:hello_world
+ERROR: Traceback (most recent call last):
+	File "/workspace/BUILD", line 1, column 10, in <toplevel>
+		cc_binary(
+	File "/virtual_builtins_bzl/bazel/exports.bzl", line 40, column 9, in _removed_rule_failure
+Error in fail:
+         This rule has been removed from Bazel. Please add a `load()` statement for it.
+         This can also be done automatically by running:
+         buildifier --lint=fix <path-to-BUILD-or-bzl-file>
+```
+
+```bash
+$ buildifier -lint=fix -r .
+
+$ cat BUILD
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 
 cc_binary(
     name = "hello_world",
     srcs = ["hello_world.cpp"],
 )
-EOF
-
-cat >hello_world.cpp <<'EOF'
-#include <iostream>
-
-int main() {
-  std::cout << "Hello, this is my first Bazel target" << std::endl;;
-  return 0;
-}
-EOF
 ```
+
+---
+hideInToc: true
+---
+
+```bash
+# No good way I know of to generate this
+$ cat >MODULE.bazel <<'EOF'
+bazel_dep(name = "rules_cc", version = "0.1.0")
+EOF
+
+# bazel build //:hello_world
+WARNING: For repository 'rules_cc', the root module requires module version rules_cc@0.1.0, but got rules_cc@0.2.14 in the resolved dependency graph. Please update the version in your MODULE.bazel or set --check_direct_dependencies=off
+
+$ cat >MODULE.bazel <<'EOF'
+bazel_dep(name = "rules_cc", version = "0.2.14")
+EOF
+
+```
+
+---
+hideInToc: true
+---
 
 ```bash
 bazel build //:hello_world
