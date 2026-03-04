@@ -109,7 +109,9 @@ hideInToc: true
 mkdir -p /workspace
 cd /workspace
 
-cat >hello_world.cpp <<'EOF'
+mkdir -p /workspace/example1
+
+cat >example1/hello_world.cpp <<'EOF'
 #include <iostream>
 
 int main() {
@@ -126,7 +128,7 @@ hideInToc: true
 ```bash
 touch MODULE.bazel
 
-cat >BUILD <<'EOF'
+cat >example1/BUILD <<'EOF'
 cc_binary(
     name = "hello_world",
     srcs = ["hello_world.cpp"],
@@ -139,9 +141,9 @@ hideInToc: true
 ---
 
 ```bash
-$ bazel build //:hello_world
+$ bazel build //example1:hello_world
 ERROR: Traceback (most recent call last):
-	File "/workspace/BUILD", line 1, column 10, in <toplevel>
+	File "/workspace/example1/BUILD", line 1, column 10, in <toplevel>
 		cc_binary(
 	File "/virtual_builtins_bzl/bazel/exports.bzl", line 40, column 9, in _removed_rule_failure
 Error in fail:
@@ -153,7 +155,7 @@ Error in fail:
 ```bash
 $ buildifier -lint=fix -r .
 
-$ cat BUILD
+$ cat example1/BUILD
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 
 cc_binary(
@@ -168,15 +170,12 @@ hideInToc: true
 
 ```bash
 # No good way I know of to generate this
+# Browse on https://registry.bazel.build/modules/rules_cc
 $ cat >MODULE.bazel <<'EOF'
-bazel_dep(name = "rules_cc", version = "0.1.0")
+bazel_dep(name = "rules_cc", version = "0.2.17")
 EOF
 
-# bazel build //:hello_world
-WARNING: For repository 'rules_cc', the root module requires module version rules_cc@0.1.0, but got rules_cc@0.2.14 in the resolved dependency graph. Please update the version in your MODULE.bazel or set --check_direct_dependencies=off
-
-$ cat >MODULE.bazel <<'EOF'
-bazel_dep(name = "rules_cc", version = "0.2.14")
+$ bazel build //example1:hello_world
 EOF
 
 ```
@@ -186,9 +185,9 @@ hideInToc: true
 ---
 
 ```bash
-bazel build //:hello_world
-bazel run //:hello_world
-bazel cquery --output=files //:hello_world
+bazel build //example1:hello_world
+bazel run //example1:hello_world
+bazel cquery --output=files //example1:hello_world
 ```
 
 ---
@@ -212,31 +211,16 @@ hideInToc: true
 ---
 
 ```bash
-mkdir -p /workspace
 cd /workspace
+mkdir -p /workspace/example2
 
-cat >MODULE.bazel <<'EOF'
-bazel_dep(name = "rules_cc", version = "0.2.14")
-EOF
-
-cat >BUILD <<'EOF'
-load("@rules_cc//cc:defs.bzl", "cc_library")
-
-cc_library(
-    name = "hello_library",
-    srcs = ["hello_library.cpp"],
-    hdrs = ["hello_library.h"],
-    visibility = ["//visibility:public"],
-)
-EOF
-
-cat >hello_library.h <<'EOF'
+cat >example2/hello_library.h <<'EOF'
 namespace hello_library {
     int sum( int a, int b );
 }
 EOF
 
-cat >hello_library.cpp <<'EOF'
+cat >example2/hello_library.cpp <<'EOF'
 #include "hello_library.h"
 
 namespace hello_library {
@@ -249,7 +233,24 @@ EOF
 ```
 
 ```bash
-bazel build //:hello_library
+cat >MODULE.bazel <<'EOF'
+bazel_dep(name = "rules_cc", version = "0.2.17")
+EOF
+
+cat >example2/BUILD <<'EOF'
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "hello_library",
+    srcs = ["hello_library.cpp"],
+    hdrs = ["hello_library.h"],
+    visibility = ["//visibility:public"],
+)
+EOF
+```
+
+```bash
+bazel build //example2:hello_library
 ```
 
 ---
@@ -257,7 +258,18 @@ hideInToc: true
 ---
 
 ```bash
-cat >BUILD <<'EOF'
+cat >example2/hello_world.cpp <<'EOF'
+#include "hello_library.h"
+#include <iostream>
+
+int main() {
+  std::cout << "Hello world " << hello_library::sum(40, 2) << std::endl;
+  return 0;
+}
+EOF
+
+```bash
+cat >example2/BUILD <<'EOF'
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
@@ -279,20 +291,8 @@ EOF
 ```
 
 ```bash
-cat >hello_world.cpp <<'EOF'
-#include "hello_library.h"
-#include <iostream>
-
-int main() {
-  std::cout << "Hello world " << hello_library::sum(40, 2) << std::endl;
-  return 0;
-}
-EOF
-```
-
-```bash
-bazel build //:hello_world
-bazel run //:hello_world
+bazel build //example2:hello_world
+bazel run //example2:hello_world
 ```
 
 ---
@@ -301,13 +301,13 @@ hideInToc: true
 
 ```bash
 cat >MODULE.bazel <<'EOF'
-bazel_dep(name = "rules_cc", version = "0.2.14")
+bazel_dep(name = "rules_cc", version = "0.2.17")
 bazel_dep(name = "googletest", version = "1.17.0.bcr.2")
 EOF
 ```
 
 ```bash
-cat >BUILD <<'EOF'
+cat >example2/BUILD <<'EOF'
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
@@ -337,7 +337,7 @@ EOF
 ```
 
 ```bash
-cat >hello_test.cpp <<'EOF'
+cat >example2/hello_test.cpp <<'EOF'
 #include "hello_library.h"
 #include <gtest/gtest.h>
 
@@ -352,8 +352,8 @@ EOF
 ```
 
 ```bash
-bazel build //:hello_test
-bazel test //:hello_test
+bazel build //example2:hello_test
+bazel test //example2:hello_test
 ```
 
 ---
@@ -361,7 +361,7 @@ hideInToc: true
 ---
 
 ```bash
-bazel cquery "deps(//:hello_world)"
+bazel cquery "deps(//example2:hello_world)"
 
 bazel cquery \
   'filter("^//", deps(//:hello_world))' \
