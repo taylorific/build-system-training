@@ -176,8 +176,6 @@ bazel_dep(name = "rules_cc", version = "0.2.17")
 EOF
 
 $ bazel build //example1:hello_world
-EOF
-
 ```
 
 ---
@@ -267,6 +265,7 @@ int main() {
   return 0;
 }
 EOF
+```
 
 ```bash
 cat >example2/BUILD <<'EOF'
