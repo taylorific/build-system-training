@@ -371,5 +371,14 @@ bazel cquery "allpaths(//:hello_world,//:hello_library.h)"
 bazel cquery "somepath(//:hello_world,//:hello_library.h)"
 
 bazel cquery "rdeps(...,//:hello_library.h)"
-
 ```
+
+---
+layout: section
+---
+
+## Rules
+
+<br>
+<br>
+<Link to="toc" title="Table of Contents"/>
