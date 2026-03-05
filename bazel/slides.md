@@ -382,3 +382,58 @@ layout: section
 <br>
 <br>
 <Link to="toc" title="Table of Contents"/>
+
+---
+hideInToc: true
+---
+
+```bash
+mkdir -p /workspace/rules
+touch /workspace/rules/MODULE.bazel
+
+mkdir -p /workspace/rules/hello
+cat >/workspace/rules/hello/hello.bzl <<'EOF'
+def _hello_impl(ctx):
+    content = ctx.attr.content
+
+    # Declare output file
+    output = ctx.actions.declare_file(ctx.label.name + ".txt")
+
+    # Write the file
+    ctx.actions.write(
+        output = output,
+        content = content,
+    )
+
+    # Tell Bazel what files this rule produces
+    return [DefaultInfo(files = depset([output]))]
+
+hello_rule = rule(
+    implementation = _hello_impl,
+    attrs = {
+        "content": attr.string(),
+    },
+)
+EOF
+
+---
+hideInToc: true
+---
+
+```bash
+cat >/workspace/rules/hello/BUILD <<'EOF'
+load("//hello:hello.bzl", "hello_rule")
+
+hello_rule(
+  name = "hello",
+  content = "Hello Bazel\n",
+)
+EOF
+```
+
+```bash
+cd /workspace/rules
+bazel build //hello:hello
+
+cat bazel-bin/hello/hello.txt
+```
