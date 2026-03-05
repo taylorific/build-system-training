@@ -12,7 +12,7 @@ layout: section
 hideInToc: true
 ---
 
-# Bazelisk Install
+## Bazelisk Install
 
 ```bash
 apt-get update
