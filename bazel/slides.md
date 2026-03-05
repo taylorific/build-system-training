@@ -415,6 +415,7 @@ hello_rule = rule(
     },
 )
 EOF
+```
 
 ---
 hideInToc: true
