@@ -55,7 +55,7 @@ routeAlias: toc
 
 # Table of Contents
 
-<Toc columns="2"/>
+<Toc columns="2" maxDepth="2"/>
 
 ---
 src: ./nix/slides.md
