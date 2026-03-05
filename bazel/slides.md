@@ -438,3 +438,21 @@ bazel build //hello:hello
 
 cat bazel-bin/hello/hello.txt
 ```
+
+---
+hideInToc: true
+---
+
+```bash
+mkdir -p /workspace/rules/genrule
+cat >/workspace/rules/genrule/BUILD <<'EOF'
+genrule(
+    name = "hello",
+    outs = ["hello.txt"],
+    cmd = "echo 'Hello from Bazel' > $@",
+)
+EOF
+
+bazel build //genrule:hello
+```
+
