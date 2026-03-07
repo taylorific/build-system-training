@@ -563,6 +563,7 @@ test --@rules_python//python/config_settings:bootstrap_impl=script
 EOF
 ```
 
+```bash
 cat >/workspace/python/app/MODULE.bazel <<'EOF'
 bazel_dep(name = "rules_python", version = "1.7.0")
 
