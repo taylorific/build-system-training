@@ -15,8 +15,8 @@ hideInToc: true
 ## Bazelisk Install
 
 ```bash
-apt-get update
-apt-get install curl ca-certificates
+sudo apt-get update
+sudo apt-get install curl ca-certificates
 ```
 
 ```bash
@@ -69,6 +69,8 @@ hideInToc: true
 hideInToc: true
 ---
 
+## Bazelisk Install
+
 ```bash
 # Intel
 sudo curl -L -o /usr/local/bin/buildifier \
@@ -95,10 +97,12 @@ buildifier scm revision: 0951e28ad5a191e4d421d3899f3259e3e0f1aa54
 hideInToc: true
 ---
 
+## Install C++ toolchain
+
 ```bash
-apt-get update
-apt-get install build-essential
-DEBIAN_FRONTEND=noninteractive apt-get install vim
+sudo apt-get update
+sudo apt-get install build-essential
+sudo -E DEBIAN_FRONTEND=noninteractive apt-get install vim
 ```
 
 ---
@@ -456,3 +460,156 @@ EOF
 bazel build //genrule:hello
 ```
 
+---
+layout: section
+---
+
+## Python
+
+<br>
+<br>
+<Link to="toc" title="Table of Contents"/>
+
+---
+hideInToc: true
+---
+
+## Python Toolchain
+
+```bash
+apt-get update
+apt-get install -y python3
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+```bash
+mkdir -p /workspace/python/app
+cat >/workspace/python/app/.python-version <<'EOF'
+3.12
+EOF
+
+cat >/workspace/python/app/pyproject.toml <<'EOF'
+[project]
+name = "app"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "requests>=2.32,<3",
+]
+EOF
+
+cd /workspace/python/app
+export PATH="/root/.local/bin:$PATH"
+uv python install
+uv lock
+uv pip compile pyproject.toml -o requirements.txt
+```
+
+---
+hideInToc: true
+---
+
+```bash
+cat >/workspace/python/app/lib.py <<'EOF'
+import requests
+
+SYSTEM_CA_BUNDLE = "/etc/ssl/certs/ca-certificates.crt"
+
+def fetch_status(url: str) -> int:
+    response = requests.get(url, timeout=5, verify=SYSTEM_CA_BUNDLE)
+    response.raise_for_status()
+    return response.status_code
+EOF
+
+cat >/workspace/python/app/main.py <<'EOF'
+from lib import fetch_status
+
+def main() -> None:
+    code = fetch_status("https://example.com")
+    print(f"status={code}")
+
+if __name__ == "__main__":
+    main()
+EOF
+```
+
+---
+hideInToc: true
+---
+
+```bash
+uv sync
+uv run python main.py
+```
+
+---
+hideInToc: true
+---
+
+```bash
+cat >/workspace/python/app/MODULE.bazel <<'EOF'
+bazel_dep(name = "rules_python", version = "1.7.0")
+
+python = use_extension(
+    "@rules_python//python/extensions:python.bzl",
+    "python",
+)
+
+python.defaults(
+    python_version = "3.12",
+)
+
+python.toolchain(
+    python_version = "3.12",
+)
+
+pip = use_extension(
+    "@rules_python//python/extensions:pip.bzl",
+    "pip",
+)
+
+pip.parse(
+    hub_name = "pypi",
+    python_version = "3.12",
+    requirements_lock = "//:requirements.txt",
+)
+
+use_repo(python, "python_3_12")
+use_repo(pip, "pypi")
+EOF
+```
+
+```bash
+cat >/workspace/python/app/BUILD.bazel <<'EOF'
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
+py_library(
+    name = "lib",
+    srcs = ["lib.py"],
+    deps = [
+        "@pypi//requests:pkg",
+    ],
+)
+
+py_binary(
+    name = "app",
+    srcs = ["main.py"],
+    main = "main.py",
+    deps = [":lib"],
+)
+EOF
+```
+
+---
+hideInToc: true
+---
+
+```bash
+# Use uv for local Python workflow
+uv sync
+uv run python main.py
+
+# Use Bazel for build/text
+bazel run //:app
+bazel test //:lib_test
+```
