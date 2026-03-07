@@ -786,3 +786,161 @@ hideInToc: true
 bazel build //:app
 bazel run //:app
 ```
+
+---
+layout: section
+---
+
+## Go
+
+<br>
+<br>
+<Link to="toc" title="Table of Contents"/>
+
+---
+hideInToc: true
+---
+
+## Go Toolchain
+
+```bash
+sudo apt-get update
+sudo apt-get install -y --no-install-recommends \
+  curl ca-certificates
+
+export GO_VERSION=1.24.0
+curl -fsSLO https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz \
+  && rm -rf /usr/local/go \
+  && tar -C /usr/local -xzf go${GO_VERSION}.linux-arm64.tar.gz \
+  && rm go${GO_VERSION}.linux-arm64.tar.gz
+
+export PATH="/usr/local/go/bin:${PATH}"
+
+go version
+```
+
+---
+hideInToc: true
+---
+
+```bash
+mkdir -p /workspace/go/app/
+cat >/workspace/go/app/go.mod <<'EOF'
+module example.com/go_app
+
+go 1.24
+
+require github.com/google/uuid v1.6.0
+EOF
+
+cat >/workspace/go/app/MODULE.bazel <<'EOF'
+bazel_dep(name = "rules_go", version = "0.60.0")
+bazel_dep(name = "gazelle", version = "0.47.0")
+
+go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
+go_sdk.download(version = "1.24.6")
+
+go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
+go_deps.from_file(go_mod = "//:go.mod")
+
+use_repo(go_deps, "com_github_google_uuid")
+EOF
+
+cat >/workspace/go/app/BUILD.bazel <<'EOF'
+load("@rules_go//go:def.bzl", "go_binary")
+load("@gazelle//:def.bzl", "gazelle")
+
+# gazelle:prefix example.com/go_app
+
+gazelle(
+    name = "gazelle",
+)
+
+go_binary(
+    name = "app",
+    srcs = ["main.go"],
+    importpath = "example.com/go_app",
+    deps = ["//lib:lib"],
+)
+EOF
+
+cat >/workspace/go/app/lib/BUILD.bazel <<'EOF'
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "lib",
+    srcs = ["lib.go"],
+    importpath = "example.com/go_app/lib",
+    visibility = ["//visibility:public"],
+    deps = ["@com_github_google_uuid//:uuid"],
+)
+
+go_test(
+    name = "lib_test",
+    srcs = ["lib_test.go"],
+    embed = [":lib"],
+)
+EOF
+```
+
+```bash
+mkdir -p /workspace/go/app/lib/
+cat >/workspace/go/app/lib/lib.go <<'EOF'
+package lib
+
+import (
+	"fmt"
+
+	"github.com/google/uuid"
+)
+
+func FormatStatus(code int) string {
+	return fmt.Sprintf("status=%d id=%s", code, uuid.Nil.String())
+}
+EOF
+
+cat >/workspace/go/app/lib/lib_test.go <<'EOF'
+package lib
+
+import (
+	"strings"
+	"testing"
+)
+
+func TestFormatStatus(t *testing.T) {
+	got := FormatStatus(200)
+
+	if !strings.Contains(got, "status=200") {
+		t.Fatalf("expected status=200 in %q", got)
+	}
+
+	if !strings.Contains(got, "00000000-0000-0000-0000-000000000000") {
+		t.Fatalf("expected nil UUID in %q", got)
+	}
+}
+EOF
+
+cat >/workspace/go/app/main.go <<'EOF'
+package main
+
+import (
+	"fmt"
+
+	"example.com/go_app/lib"
+)
+
+func main() {
+	fmt.Println(lib.FormatStatus(200))
+}
+EOF
+```
+
+---
+hideInToc: true
+---
+
+```bash
+bazel build //:app
+bazel test //lib:lib_test
+bazel run //:app
+```
