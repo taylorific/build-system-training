@@ -637,3 +637,152 @@ uv pip compile pyproject.toml -o requirements.txt
 bazel run //:app
 bazel test //:lib_test
 ```
+
+---
+layout: section
+---
+
+## Typescript
+
+<br>
+<br>
+<Link to="toc" title="Table of Contents"/>
+
+---
+hideInToc: true
+---
+
+## Typescript Toolchain
+
+```bash
+apt-get update
+apt-get install -y --no-install-recommends \
+  curl \
+  ca-certificates \
+  git \
+  python3 \
+  build-essential \
+  xz-utils
+
+export NODE_VERSION=20.11.1
+export PNPM_VERSION=10.17.1
+
+curl -fsSL https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-arm64.tar.xz \
+  | tar -xJ -C /usr/local --strip-components=1
+
+corepack enable
+corepack prepare pnpm@${PNPM_VERSION} --activate
+
+node -v
+pnpm -v
+```
+
+---
+hideInToc: true
+---
+
+```bash
+mkdir -p /workspace/typescript/app/
+cat >/workspace/typescript/app/package.json <<'EOF'
+{
+  "name": "ts_app",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "typescript": "5.8.2"
+  }
+}
+EOF
+
+cat >/workspace/typescript/app/tsconfig.json <<'EOF'
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "rootDir": "src",
+    "strict": true
+  }
+}
+EOF
+
+cd /workspace/typescript/app
+pnpm install
+```
+
+```bash
+cat >/workspace/typescript/app/MODULE.bazel <<'EOF'
+bazel_dep(name = "aspect_rules_js", version = "3.0.2")
+bazel_dep(name = "aspect_rules_ts", version = "3.8.6")
+
+npm = use_extension("@aspect_rules_js//npm:extensions.bzl", "npm")
+
+npm.translate_lock(
+    name = "npm",
+    pnpm_lock = "//:pnpm-lock.yaml",
+)
+
+use_repo(npm, "npm")
+
+rules_ts_ext = use_extension(
+    "@aspect_rules_ts//ts:extensions.bzl",
+    "ext",
+    dev_dependency = True,
+)
+
+rules_ts_ext.deps(
+    ts_version_from = "//:package.json",
+)
+
+use_repo(rules_ts_ext, "npm_typescript")
+EOF
+
+cat >/workspace/typescript/app/BUILD.bazel <<'EOF'
+load("@aspect_rules_ts//ts:defs.bzl", "ts_project", "ts_config")
+load("@aspect_rules_js//js:defs.bzl", "js_binary")
+
+ts_config(
+    name = "tsconfig",
+    src = "tsconfig.json",
+)
+
+ts_project(
+    name = "app_lib",
+    srcs = [
+        "src/main.ts",
+        "src/lib.ts",
+    ],
+    tsconfig = ":tsconfig",
+    transpiler = "tsc",
+)
+
+js_binary(
+    name = "app",
+    entry_point = "src/main.js",
+    data = [":app_lib"],
+)
+EOF
+```
+
+```bash
+mkdir -p /workspace/typescript/app/src
+cat >/workspace/typescript/app/src/lib.ts <<'EOF'
+export function formatStatus(code: number): string {
+  return `status=${code}`;
+}
+
+cat >/workspace/typescript/app/src/main.ts <<'EOF'
+import { formatStatus } from "./lib.js";
+
+console.log(formatStatus(200));
+EOF
+```
+
+---
+hideInToc: true
+---
+
+```bash
+bazel build //:app
+bazel run //:app
+```
