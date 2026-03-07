@@ -531,6 +531,15 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 EOF
+
+mkdir -p /workspace/python/app/tests
+cat >/workspace/python/app/tests/lib_test.py <<'EOF'
+from lib import fetch_status
+
+def test_smoke():
+    # For a real test, you'd usually mock requests instead of doing network I/O.
+    assert callable(fetch_status)
+EOF
 ```
 
 ---
@@ -547,6 +556,13 @@ hideInToc: true
 ---
 
 ```bash
+cat >/workspace/python/app/.bazelrc << 'EOF'
+build --@rules_python//python/config_settings:bootstrap_impl=script
+run --@rules_python//python/config_settings:bootstrap_impl=script
+test --@rules_python//python/config_settings:bootstrap_impl=script
+EOF
+```
+
 cat >/workspace/python/app/MODULE.bazel <<'EOF'
 bazel_dep(name = "rules_python", version = "1.7.0")
 
@@ -581,7 +597,7 @@ EOF
 
 ```bash
 cat >/workspace/python/app/BUILD.bazel <<'EOF'
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 
 py_library(
     name = "lib",
@@ -597,6 +613,12 @@ py_binary(
     main = "main.py",
     deps = [":lib"],
 )
+
+py_test(
+    name = "lib_test",
+    srcs = ["tests/lib_test.py"],
+    deps = [":lib"],
+)
 EOF
 ```
 
@@ -606,8 +628,9 @@ hideInToc: true
 
 ```bash
 # Use uv for local Python workflow
-uv sync
-uv run python main.py
+uv add rich
+uv lock
+uv pip compile pyproject.toml -o requirements.txt
 
 # Use Bazel for build/text
 bazel run //:app
