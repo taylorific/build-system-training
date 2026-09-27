@@ -58,6 +58,10 @@ routeAlias: toc
 <Toc columns="2" maxDepth="2"/>
 
 ---
+src: ./jujutsu/slides.md
+---
+
+---
 src: ./nix/slides.md
 ---
 
