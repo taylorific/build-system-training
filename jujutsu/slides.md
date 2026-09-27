@@ -27,6 +27,7 @@ while remaining compatible with Git repositories.
 
 ---
 hideInToc: true
+layout: two-cols
 ---
 
 # References
