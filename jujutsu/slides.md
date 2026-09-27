@@ -2,7 +2,7 @@
 layout: section
 ---
 
-# Jujutsu Version Control System (VCS)
+# Jujutsu
 
 <br>
 <br>
@@ -12,12 +12,49 @@ layout: section
 hideInToc: true
 ---
 
-## Jujutsu Version Control System (VCS) Project
+# What is Jujutsu?
 
-- [Martin von Zweigberk](https://www.linkedin.com/in/martinvonz/) created the
-  Julutsu VCS project around 2019 when he was working at Google.
-- Julutsu is a new version control engine that borrows ideas from Google's
-  internal version control system Piper/CitC and from Git and Mercural.
-- The command-line executable for Jujutsu is called `jj`.
-- Jujutsu supports a Git backend, so you can use `jj` against ordinary
-  GitHub/GitLab/Bitbucket repositories without convincing everyone to switch.
+Jujutsu (`jj`) is a version control system.
+
+It combines ideas from:
+
+- Git
+- Mercurial
+- Darcs / Pijul
+- Google's internal development workflows
+
+while remaining compatible with Git repositories.
+
+---
+hideInToc: true
+---
+
+# References
+
+**Martin von Zweigbergk**  
+*Jujutsu: A Git-Compatible VCS*  
+Git Merge 2022  
+https://github.com/jj-vcs/jj/wiki/Media
+
+**Martin von Zweigbergk**  
+*Jujutsu: A Git-compatible VCS*  
+Git Merge 2024  
+https://github.com/jj-vcs/jj/wiki/Media
+
+**Jujutsu Project**  
+*Jujutsu Documentation*  
+https://jj-vcs.github.io/jj/latest/
+
+**Jujutsu Project**  
+*Jujutsu Source Repository*  
+https://github.com/jj-vcs/jj
+
+**Rachel Potvin and Josh Levenberg**  
+*Why Google Stores Billions of Lines of Code in a Single Repository*  
+Communications of the ACM, Vol. 59, No. 7, 2016  
+[DOI: 10.1145/2854146](https://doi.org/10.1145/2854146)
+
+**Andrey Mokhov, Neil Mitchell, and Simon Peyton Jones**  
+*Build Systems à la Carte*  
+Proceedings of the ACM on Programming Languages, Vol. 2, ICFP, 2018  
+[DOI: 10.1145/3236774](https://doi.org/10.1145/3236774)
