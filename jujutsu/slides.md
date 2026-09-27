@@ -50,6 +50,10 @@ https://jj-vcs.github.io/jj/latest/
 *Jujutsu Source Repository*  
 https://github.com/jj-vcs/jj
 
+::right::
+
+# &nbsp;
+
 **Rachel Potvin and Josh Levenberg**  
 *Why Google Stores Billions of Lines of Code in a Single Repository*  
 Communications of the ACM, Vol. 59, No. 7, 2016  
