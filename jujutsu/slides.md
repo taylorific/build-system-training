@@ -62,8 +62,6 @@ hideInToc: true
 Download the latest release from GitHub:
 
 ```bash
-Download the latest release directly from GitHub:
-
 VERSION=$(
   curl -fsSL https://api.github.com/repos/jj-vcs/jj/releases/latest |
   sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p'
