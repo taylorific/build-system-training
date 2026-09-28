@@ -27,6 +27,48 @@ while remaining compatible with Git repositories.
 
 ---
 hideInToc: true
+---
+
+# Installing Jujutsu - Linux
+
+# Installing Jujutsu — Linux
+
+Download the latest release directly from GitHub:
+
+```bash
+VERSION=$(
+  curl -fsSL https://api.github.com/repos/jj-vcs/jj/releases/latest |
+  sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p'
+)
+
+ARCH=$(uname -m)
+
+curl -fLO \
+  "https://github.com/jj-vcs/jj/releases/download/v${VERSION}/jj-v${VERSION}-${ARCH}-unknown-linux-musl.tar.gz"
+
+# Extract and install
+tar -xzf "jj-v${VERSION}-${ARCH}-unknown-linux-musl.tar.gz"
+
+sudo install jj /usr/local/bin/jj
+
+# Verify
+jj --version
+```
+
+---
+hideInToc: true
+---
+
+# Installing Jujutsu - Windows
+
+Install the latest release with WinGet:
+
+```powershell
+winget install jj-vcs.jj
+```
+
+---
+hideInToc: true
 layout: two-cols
 ---
 
